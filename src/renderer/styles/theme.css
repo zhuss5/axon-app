@@ -1,0 +1,19 @@
+:root {
+  color-scheme: light;
+  --axon-surface-app: #ffffff;
+  --axon-surface-panel: #ffffff;
+  --axon-text-primary: #272727;
+  --axon-text-secondary: #606565;
+  --axon-border: #e1e5e2;
+  --axon-accent: #317f68;
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --axon-surface-app: #171a1c;
+  --axon-surface-panel: #202427;
+  --axon-text-primary: #e7ecea;
+  --axon-text-secondary: #b2beba;
+  --axon-border: #394340;
+  --axon-accent: #45b88f;
+}
