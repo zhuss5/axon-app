@@ -1,3 +1,5 @@
+import type { ConnectorListInput, ConnectorListResult } from './connectors';
+
 export interface AssetPaths {
   userData: string;
   workspace: string;
@@ -20,4 +22,5 @@ export interface PlatformAPI {
   setAccessToken(token: string): Promise<void>;
   request(input: PlatformRequest): Promise<{ status: number; body: string }>;
   openAssetDirectory(kind: 'experts' | 'skills' | 'workflows'): Promise<void>;
+  connectorsList(input: ConnectorListInput): Promise<ConnectorListResult>;
 }

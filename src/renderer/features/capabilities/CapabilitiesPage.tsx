@@ -1,4 +1,5 @@
 import { ExpertsPage } from '../experts/ExpertsPage';
+import { ConnectorsPanel } from './ConnectorsPanel';
 
 export type CapabilityTab = 'experts' | 'skills' | 'connectors';
 
@@ -10,6 +11,8 @@ export function CapabilitiesPage({ capabilityTab, onTabChange }: {
     {([['experts', '专家'], ['skills', '技能'], ['connectors', '连接器']] as const).map(([id, label]) =>
       <button key={id} id={`tab-${id}`} role="tab" className={capabilityTab === id ? 'active' : ''} aria-selected={capabilityTab === id} aria-controls="capability-panel" onClick={() => onTabChange(id)}>{label}</button>)}
   </div><section id="capability-panel" role="tabpanel" aria-labelledby={`tab-${capabilityTab}`}>
-    {capabilityTab === 'experts' ? <ExpertsPage /> : <div className="axon-empty"><h2>{capabilityTab === 'skills' ? '技能' : '连接器'}</h2><p>暂无平台{capabilityTab === 'skills' ? '技能' : '连接器'}</p></div>}
+    {capabilityTab === 'experts' ? <ExpertsPage />
+      : capabilityTab === 'connectors' ? <ConnectorsPanel />
+      : <div className="axon-empty"><h2>技能</h2><p>暂无平台技能</p></div>}
   </section></div>;
 }

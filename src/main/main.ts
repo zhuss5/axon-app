@@ -6,6 +6,8 @@ import { AxonTokenStore } from './axonAuth/AxonTokenStore';
 import { AxonAuthManager } from './axonAuth/AxonAuthManager';
 import { loadAuthConfig } from './axonAuth/config';
 import { resolveAssetPaths } from './features/capabilities/assetPaths';
+import { listConnectors } from './features/connectors/connectorService';
+import { resolveSystemNamespace } from './features/connectors/namespace';
 import type { PlatformRequest } from '../shared/runtime/platform';
 
 app.setName('axon');
@@ -34,6 +36,11 @@ async function start() {
       });
       return { status: response.status, body: await response.text() };
     },
+    'connectors:list': (input: unknown) => listConnectors({
+      baseUrl: config.allowedApiOrigins[0],
+      systemNamespace: resolveSystemNamespace(),
+      request: (url, init) => manager.request(url, init),
+    }, input),
     'open-asset-directory': async (kind: string) => {
       if (kind !== 'experts' && kind !== 'skills' && kind !== 'workflows') throw new Error('未知资产目录');
       await mkdir(paths[kind], { recursive: true });

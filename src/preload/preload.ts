@@ -6,5 +6,6 @@ const platform: PlatformAPI = {
   setAccessToken: token => ipcRenderer.invoke('axon:platform:set-access-token', token),
   request: input => ipcRenderer.invoke('axon:platform:request', input),
   openAssetDirectory: kind => ipcRenderer.invoke('axon:platform:open-asset-directory', kind),
+  connectorsList: input => ipcRenderer.invoke('axon:platform:connectors:list', input),
 };
 contextBridge.exposeInMainWorld('agentManagerHost', { platformApi: platform });

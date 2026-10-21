@@ -27,6 +27,17 @@ const response = await manager.request(url, { method: 'GET' });
 
 `request()` 自动添加 Bearer token，处理 Origin 校验、超时和 HTTP 错误。回迁时使用 AXON App 已有的认证管理器，不迁入手动 token 输入和明文存储逻辑。
 
+## 连接器页与本地 mock
+
+「专家·技能·连接器 → 连接器」展示我的 MCP / 公共 MCP，数据经主进程调用平台 aihub 目录接口，契约见《详细设计文档/Axon 连接器中心与灵犀平台 MCP 集成技术设计方案》。
+
+```sh
+npm run mock   # 本地 aihub 目录 mock（127.0.0.1:18080）
+npm run test   # 主进程连接器模块单测（node --test）
+```
+
+mock 鉴权接受 Bearer 任意非空 token；token 设为 `expired` 模拟 401；namespace 设为 `FORBIDDEN-403` / `BROKEN-500` 模拟错误。我的 MCP 的系统编号命名空间默认 `TEST-101`，用 `AXON_CONNECTOR_NAMESPACE` 覆盖，平台接口确定后替换 `src/main/features/connectors/namespace.ts`。
+
 ## Linux 资产位置
 
 下面是默认位置，代码必须通过系统 API 获取根目录，不写死用户名或绝对路径。统一解析入口为 `src/main/features/capabilities/assetPaths.ts`。
