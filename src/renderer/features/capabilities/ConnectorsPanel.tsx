@@ -5,8 +5,8 @@ import { platform } from '../../platform/hostApi';
 import './connectors.css';
 
 const PAGE_SIZE = 20;
-// 401/未设置 token 时 AxonAuthManager 抛出的消息前缀，渲染层据此区分登录引导与网络故障
-const AUTH_REQUIRED = 'AuthRequired';
+// 未设置 token 抛 AuthRequired；token 失效时 AxonAuthManager 清空 token 并抛（401），两者都走登录引导
+const LOGIN_REQUIRED = /AuthRequired|（401）/;
 
 type SectionStatus = 'loading' | 'ready' | 'error' | 'login';
 
@@ -52,7 +52,7 @@ function ConnectorSection({ group }: { group: ConnectorGroup }) {
     } catch (error) {
       if (id !== seq.current) return;
       const message = String(error);
-      setState(s => ({ ...s, status: message.includes(AUTH_REQUIRED) ? 'login' : 'error', message, busy: false }));
+      setState(s => ({ ...s, status: LOGIN_REQUIRED.test(message) ? 'login' : 'error', message, busy: false }));
     }
   }
 
@@ -70,6 +70,13 @@ function ConnectorSection({ group }: { group: ConnectorGroup }) {
 
   const namespaceHint = group === 'mine' && state.items[0]?.namespace ? maskNamespace(state.items[0].namespace) : '';
   const retry = () => void load(1, true, keyword);
+  // 失败或登录失效时以横幅提示，已加载的数据继续展示，不把列表误显示为空
+  const showList = state.items.length > 0;
+  const banner = state.status === 'login'
+    ? <div className="axon-connector-state" role="status"><p>请先在首页设置 accessToken，然后返回此页点击刷新。</p></div>
+    : state.status === 'error'
+      ? <div className="axon-connector-state" role="alert"><p className="am-error">{state.message}</p><button type="button" disabled={state.busy} onClick={retry}>重试</button></div>
+      : null;
 
   return <section className="axon-connector-section" aria-label={group === 'mine' ? '我的 MCP' : '公共 MCP'}>
     <header className="axon-connector-header">
@@ -82,34 +89,29 @@ function ConnectorSection({ group }: { group: ConnectorGroup }) {
         <button type="button" disabled={state.busy} onClick={retry}>刷新</button>
       </div>
     </header>
-    {state.status === 'login'
-      ? <p className="axon-connector-state">请先在首页设置 accessToken，然后返回此页点击刷新。</p>
-      : state.status === 'error'
-        ? <div className="axon-connector-state"><p className="am-error">{state.message}</p><button type="button" onClick={retry}>重试</button></div>
-        : state.status === 'loading'
-          ? <p className="axon-connector-state">加载中…</p>
-          : state.items.length === 0
-            ? <p className="axon-connector-state">{keyword ? '无搜索结果' : '暂无连接器'}</p>
-            : <>
-              <div className="axon-connector-grid">
-                {state.items.map(item => <article key={item.id} className={`axon-connector-card${item.enabled ? '' : ' is-disabled'}`}>
-                  <header><span className="axon-connector-name">{item.name}</span>{item.version && <span className="axon-connector-version">v{item.version}</span>}</header>
-                  <div className="axon-connector-badges">
-                    {item.frontProtocol && <span className="axon-connector-badge">{item.frontProtocol}</span>}
-                    {!item.enabled && <span className="axon-connector-badge is-off">已停用</span>}
-                  </div>
-                  {item.description && <p className="axon-connector-desc">{item.description}</p>}
-                  <footer className="axon-connector-meta">
-                    {[item.author, item.releaseDate?.slice(0, 10), ...item.tags].filter(Boolean).join(' · ')}
-                  </footer>
-                </article>)}
-              </div>
-              <footer className="axon-connector-footer">
-                <span>共 {state.total} 条{state.skipped > 0 ? `，已跳过 ${state.skipped} 条异常数据` : ''}</span>
-                {state.pageNum < state.totalPages
-                  && <button type="button" disabled={state.busy} onClick={() => void load(state.pageNum + 1, false, keyword)}>加载更多</button>}
-              </footer>
-            </>}
+    {banner}
+    {state.status === 'loading' && !showList && <p className="axon-connector-state">加载中…</p>}
+    {state.status === 'ready' && !showList && <p className="axon-connector-state">{keyword ? '无搜索结果' : '暂无连接器'}</p>}
+    {showList && <>
+      <div className="axon-connector-grid">
+        {state.items.map(item => <article key={item.id} className={`axon-connector-card${item.enabled ? '' : ' is-disabled'}`}>
+          <header><span className="axon-connector-name">{item.name}</span>{item.version && <span className="axon-connector-version">v{item.version}</span>}</header>
+          <div className="axon-connector-badges">
+            {item.frontProtocol && <span className="axon-connector-badge">{item.frontProtocol}</span>}
+            {!item.enabled && <span className="axon-connector-badge is-off">已停用</span>}
+          </div>
+          {item.description && <p className="axon-connector-desc">{item.description}</p>}
+          <footer className="axon-connector-meta">
+            {[item.author, item.releaseDate?.slice(0, 10), ...item.tags].filter(Boolean).join(' · ')}
+          </footer>
+        </article>)}
+      </div>
+      <footer className="axon-connector-footer">
+        <span>共 {state.total} 条{state.skipped > 0 ? `，已跳过 ${state.skipped} 条异常数据` : ''}</span>
+        {state.pageNum < state.totalPages
+          && <button type="button" disabled={state.busy} onClick={() => void load(state.pageNum + 1, false, keyword)}>加载更多</button>}
+      </footer>
+    </>}
   </section>;
 }
 

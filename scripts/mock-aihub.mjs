@@ -33,6 +33,8 @@ const MINE = [
   entry('TEST-101', 'report-generator', '按模板生成周报与专项报告。', { author: 'u_li', enabled: false, releaseDays: 5 }),
   entry('TEST-101', 'legacy-metadata', '旧字段结构联调条目（metadata 形态）。', { author: 'u_wang', metaStyle: 'metadata' }),
   entry('TEST-101', 'sys-log-tail', '跟踪系统日志尾部输出。', { author: 'admin', releaseDays: 20 }),
+  // 描述含标记文本：验证客户端按纯文本渲染，不解释 HTML
+  entry('TEST-101', 'plain-text-check', '纯文本校验：<b>加粗</b> 与 <img src=x onerror=alert(1)> 应原样显示', { author: 'qa', tags: ['qa'] }),
   // 故意损坏的条目：缺 name / 缺 id，用于验证客户端逐条跳过并计数
   { namespace: 'TEST-101', description: '缺 name 的损坏条目', content: { id: randomUUID() } },
   { name: 'broken-no-id', namespace: 'TEST-101', description: '缺 id 的损坏条目' },
